@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Free AI Study Notes Generator — paste or scan notes, no API keys." />
+  <title>StudyNotes AI — Free Study Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+</head>
+<body>
+  <div class="bg-glow bg-glow-a"></div>
+  <div class="bg-glow bg-glow-b"></div>
+
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-badge">SN</div>
+          <div>
+            <span class="logo-text">StudyNotes AI</span>
+            <span class="logo-sub">100% free · no API keys</span>
+          </div>
+        </div>
+        <button class="btn-icon sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <button class="btn-new-chat" id="newChatBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        New session
+      </button>
+
+      <div class="sidebar-section">
+        <h3>Features</h3>
+        <ul class="feature-list">
+          <li><span class="fi">📝</span> Smart summary</li>
+          <li><span class="fi">📷</span> Photo → text (OCR)</li>
+          <li><span class="fi">📖</span> Definitions</li>
+          <li><span class="fi">❓</span> Quiz + answers</li>
+          <li><span class="fi">📅</span> Study plan</li>
+          <li><span class="fi">💡</span> Memory tips</li>
+          <li><span class="fi">📋</span> Copy & export</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Recent sessions</h3>
+        <ul class="history-list" id="historyList">
+          <li class="history-empty">No history yet</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <span class="status-pill" id="providerStatus">Checking engine…</span>
+      </div>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="btn-icon" id="menuBtn" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="topbar-center">
+          <h1>Study Notes Generator</h1>
+          <p>Paste text or upload a photo of your notes</p>
+        </div>
+        <button class="btn-icon theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="toolbar">
+        <label class="chip-select">
+          <span>Depth</span>
+          <select id="depthSelect">
+            <option value="quick">Quick</option>
+            <option value="standard" selected>Standard</option>
+            <option value="deep">Deep</option>
+          </select>
+        </label>
+        <label class="chip-toggle">
+          <input type="checkbox" id="ollamaToggle" />
+          <span>Use Ollama (if installed)</span>
+        </label>
+        <button type="button" class="chip-btn" id="flashcardBtn" disabled>Flashcard mode</button>
+      </div>
+
+      <div class="chat-container" id="chatContainer">
+        <div class="messages" id="messages">
+          <div class="message message-assistant welcome-message" id="welcomeMessage">
+            <div class="avatar avatar-assistant">✨</div>
+            <div class="message-content welcome-grid">
+              <div class="welcome-hero">
+                <h2>Turn messy notes into exam-ready study packs</h2>
+                <p>No OpenAI key needed. Everything runs locally on your machine — paste text or snap a photo of handwritten notes.</p>
+              </div>
+              <div class="welcome-cards">
+                <article class="welcome-card"><span>📝</span><strong>Summary</strong><small>Core ideas distilled</small></article>
+                <article class="welcome-card"><span>📷</span><strong>Photo scan</strong><small>OCR in your browser</small></article>
+                <article class="welcome-card"><span>❓</span><strong>Quiz</strong><small>5 Q&amp;A items</small></article>
+                <article class="welcome-card"><span>📅</span><strong>Study plan</strong><small>5-day schedule</small></article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="image-preview hidden" id="imagePreview">
+          <img id="previewImg" alt="Note preview" />
+          <div class="preview-meta">
+            <span id="ocrStatus">Ready to scan</span>
+            <button type="button" class="text-btn" id="clearImageBtn">Remove</button>
+          </div>
+        </div>
+
+        <form class="input-form" id="notesForm">
+          <div class="input-wrapper">
+            <div class="input-actions">
+              <label class="btn-attach" title="Upload photo of notes">
+                <input type="file" id="imageInput" accept="image/*" capture="environment" hidden />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+                </svg>
+              </label>
+              <button type="button" class="btn-scan" id="scanBtn" disabled>Scan photo</button>
+            </div>
+            <textarea id="notesInput" class="notes-input" placeholder="Paste notes here, or upload a photo and tap Scan photo…" rows="3" maxlength="50000"></textarea>
+            <button type="submit" class="btn-send" id="sendBtn" aria-label="Generate">
+              <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              <div class="spinner"></div>
+            </button>
+          </div>
+          <p class="input-hint">Enter ≥10 characters · Enter to send · Shift+Enter for new line · Drag &amp; drop images</p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
